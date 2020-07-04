@@ -117,6 +117,7 @@ var fileOpTests = []integration.Test{
 	testCopyOverrideFiles,
 	testCopyVarSubstitution,
 	testCopyWildcards,
+	testCopyFromExpand,
 	testCopyRelative,
 	testTarContext,
 	testTarContextExternalDockerfile,
@@ -839,7 +840,7 @@ func testWorkdirCopyIgnoreRelative(t *testing.T, sb integration.Sandbox) {
 	dockerfile := []byte(`
 FROM scratch AS base
 WORKDIR /foo
-COPY Dockerfile / 
+COPY Dockerfile /
 FROM scratch
 # relative path still loaded as absolute
 COPY --from=base Dockerfile .
@@ -3165,6 +3166,45 @@ COPY sub/dir1 subdest6
 	require.Equal(t, "foo-contents", string(dt))
 }
 
+func testCopyFromExpand(t *testing.T, sb integration.Sandbox) {
+	f := getFrontend(t, sb)
+	isFileOp := getFileOp(t, sb)
+
+	dockerfile := []byte(`
+ARG baseimage
+FROM scratch AS mybaseimage
+WORKDIR /test1
+COPY foo.txt ./
+FROM busybox
+WORKDIR /test2
+COPY --from=${baseimage} /test1/foo.txt ./bar.txt
+RUN sh -c "[ $(cat /test2/bar.txt) = 'hello' ]"
+`)
+
+	dir, err := tmpdir(
+		fstest.CreateFile("Dockerfile", dockerfile, 0600),
+		fstest.CreateFile("foo", []byte(`hello`), 0600),
+	)
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	c, err := client.New(context.TODO(), sb.Address())
+	require.NoError(t, err)
+	defer c.Close()
+
+	_, err = f.Solve(context.TODO(), c, client.SolveOpt{
+		FrontendAttrs: map[string]string{
+			"build-arg:BUILDKIT_DISABLE_FILEOP": strconv.FormatBool(!isFileOp),
+			"build-arg:baseimage":               "mybaseimage",
+		},
+		LocalDirs: map[string]string{
+			builder.DefaultLocalNameDockerfile: dir,
+			builder.DefaultLocalNameContext:    dir,
+		},
+	}, nil)
+	require.NoError(t, err)
+}
+
 func testCopyRelative(t *testing.T, sb integration.Sandbox) {
 	f := getFrontend(t, sb)
 	isFileOp := getFileOp(t, sb)
@@ -3625,7 +3665,7 @@ ONBUILD RUN mkdir -p /out && echo -n 11 >> /out/foo
 	require.NoError(t, err)
 
 	dockerfile = []byte(fmt.Sprintf(`
-	FROM %s 
+	FROM %s
 	`, target))
 
 	dir, err = tmpdir(
