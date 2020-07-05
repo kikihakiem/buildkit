@@ -43,6 +43,13 @@ COPY --from=0 f2 /
 	_, _, err = Dockerfile2LLB(appcontext.Context(), []byte(df), ConvertOpt{})
 	assert.NoError(t, err)
 
+	df = `ARG tag=latest
+FROM scratch AS foo
+COPY --from=busybox:${tag} f1 /
+	`
+	_, _, err = Dockerfile2LLB(appcontext.Context(), []byte(df), ConvertOpt{})
+	assert.NoError(t, err)
+
 	df = `FROM busybox AS foo
 ENV FOO bar
 FROM foo

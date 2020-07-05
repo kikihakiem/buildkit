@@ -100,6 +100,7 @@ func Dockerfile2LLB(ctx context.Context, dt []byte, opt ConvertOpt) (*llb.State,
 		}
 		optMetaArgs = append(optMetaArgs, setKVValue(metaArg.KeyValuePairOptional, opt.BuildArgs))
 	}
+	metaArgsMap := metaArgsToMap(optMetaArgs)
 
 	metaResolver := opt.MetaResolver
 	if metaResolver == nil {
@@ -110,7 +111,7 @@ func Dockerfile2LLB(ctx context.Context, dt []byte, opt ConvertOpt) (*llb.State,
 
 	// set base state for every image
 	for i, st := range stages {
-		name, err := shlex.ProcessWordWithMap(st.BaseName, metaArgsToMap(optMetaArgs))
+		name, err := shlex.ProcessWordWithMap(st.BaseName, metaArgsMap)
 		if err != nil {
 			return nil, nil, parser.WithLocation(err, st.Location)
 		}
@@ -132,7 +133,7 @@ func Dockerfile2LLB(ctx context.Context, dt []byte, opt ConvertOpt) (*llb.State,
 		}
 
 		if v := st.Platform; v != "" {
-			v, err := shlex.ProcessWordWithMap(v, metaArgsToMap(optMetaArgs))
+			v, err := shlex.ProcessWordWithMap(v, metaArgsMap)
 			if err != nil {
 				return nil, nil, parser.WithLocation(errors.Wrapf(err, "failed to process arguments for platform %s", v), st.Location)
 			}
@@ -198,6 +199,14 @@ func Dockerfile2LLB(ctx context.Context, dt []byte, opt ConvertOpt) (*llb.State,
 				if src != nil {
 					d.deps[src] = struct{}{}
 					if src.unregistered {
+						name, err := shlex.ProcessWordWithMap(src.stage.BaseName, metaArgsMap)
+						if err != nil {
+							return nil, nil, parser.WithLocation(err, src.stage.Location)
+						}
+						if name == "" {
+							return nil, nil, parser.WithLocation(errors.Errorf("base name (%s) should not be blank", src.stage.BaseName), src.stage.Location)
+						}
+						src.stage.BaseName = name
 						allDispatchStates.addState(src)
 					}
 				}
