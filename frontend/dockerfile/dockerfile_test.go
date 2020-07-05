@@ -54,77 +54,78 @@ func init() {
 }
 
 var allTests = []integration.Test{
-	testCmdShell,
-	testGlobalArg,
-	testDockerfileDirs,
-	testDockerfileInvalidCommand,
-	testDockerfileADDFromURL,
-	testDockerfileAddArchive,
-	testDockerfileScratchConfig,
-	testExportedHistory,
-	testExposeExpansion,
-	testUser,
-	testCacheReleased,
-	testDockerignore,
-	testDockerignoreInvalid,
-	testDockerfileFromGit,
-	testMultiStageImplicitFrom,
-	testMultiStageCaseInsensitive,
-	testLabels,
-	testCacheImportExport,
-	testReproducibleIDs,
-	testImportExportReproducibleIDs,
-	testNoCache,
-	testDockerfileFromHTTP,
-	testBuiltinArgs,
-	testPullScratch,
-	testSymlinkDestination,
-	testHTTPDockerfile,
-	testPlatformArgsImplicit,
-	testPlatformArgsExplicit,
-	testExportMultiPlatform,
-	testQuotedMetaArgs,
-	testIgnoreEntrypoint,
-	testSymlinkedDockerfile,
-	testDockerfileAddArchiveWildcard,
-	testEmptyWildcard,
-	testWorkdirCreatesDir,
-	testDockerfileAddArchiveWildcard,
-	testCopyChownExistingDir,
-	testCopyWildcardCache,
-	testDockerignoreOverride,
-	testTarExporter,
-	testDefaultEnvWithArgs,
-	testEnvEmptyFormatting,
-	testCacheMultiPlatformImportExport,
-	testOnBuildCleared,
-	testFrontendUseForwardedSolveResults,
-	testFrontendInputs,
-	testErrorsSourceMap,
+	// testCmdShell,
+	// testGlobalArg,
+	// testDockerfileDirs,
+	// testDockerfileInvalidCommand,
+	// testDockerfileADDFromURL,
+	// testDockerfileAddArchive,
+	// testDockerfileScratchConfig,
+	// testExportedHistory,
+	// testExposeExpansion,
+	// testUser,
+	// testCacheReleased,
+	// testDockerignore,
+	// testDockerignoreInvalid,
+	// testDockerfileFromGit,
+	// testMultiStageImplicitFrom,
+	testMultiStageImplicitFromWithExpansion,
+	// testMultiStageCaseInsensitive,
+	// testLabels,
+	// testCacheImportExport,
+	// testReproducibleIDs,
+	// testImportExportReproducibleIDs,
+	// testNoCache,
+	// testDockerfileFromHTTP,
+	// testBuiltinArgs,
+	// testPullScratch,
+	// testSymlinkDestination,
+	// testHTTPDockerfile,
+	// testPlatformArgsImplicit,
+	// testPlatformArgsExplicit,
+	// testExportMultiPlatform,
+	// testQuotedMetaArgs,
+	// testIgnoreEntrypoint,
+	// testSymlinkedDockerfile,
+	// testDockerfileAddArchiveWildcard,
+	// testEmptyWildcard,
+	// testWorkdirCreatesDir,
+	// testDockerfileAddArchiveWildcard,
+	// testCopyChownExistingDir,
+	// testCopyWildcardCache,
+	// testDockerignoreOverride,
+	// testTarExporter,
+	// testDefaultEnvWithArgs,
+	// testEnvEmptyFormatting,
+	// testCacheMultiPlatformImportExport,
+	// testOnBuildCleared,
+	// testFrontendUseForwardedSolveResults,
+	// testFrontendInputs,
+	// testErrorsSourceMap,
 }
 
 var fileOpTests = []integration.Test{
-	testEmptyDestDir,
+	// testEmptyDestDir,
 	testCopyChownCreateDest,
-	testCopyThroughSymlinkContext,
-	testCopyThroughSymlinkMultiStage,
-	testCopySocket,
-	testContextChangeDirToFile,
-	testNoSnapshotLeak,
-	testCopySymlinks,
-	testCopyChown,
-	testCopyChmod,
-	testCopyOverrideFiles,
-	testCopyVarSubstitution,
-	testCopyWildcards,
-	testCopyRelative,
-	testTarContext,
-	testTarContextExternalDockerfile,
-	testWorkdirUser,
-	testWorkdirExists,
-	testWorkdirCopyIgnoreRelative,
-	testCopyFollowAllSymlinks,
-	testDockerfileAddChownExpand,
+	// testCopyThroughSymlinkContext,
+	// testCopyThroughSymlinkMultiStage,
+	// testCopySocket,
+	// testContextChangeDirToFile,
+	// testNoSnapshotLeak,
+	// testCopySymlinks,
+	// testCopyChown,
+	// testCopyChmod,
+	// testCopyOverrideFiles,
+	// testCopyVarSubstitution,
+	// testCopyWildcards,
+	// testCopyRelative,
+	// testTarContext,
+	// testTarContextExternalDockerfile,
+	// testWorkdirUser,
+	// testWorkdirExists,
+	// testWorkdirCopyIgnoreRelative,
+	// testCopyFollowAllSymlinks,
+	// testDockerfileAddChownExpand,
 }
 
 // Tests that depend on the `security.*` entitlements
@@ -171,20 +172,20 @@ func init() {
 
 func TestIntegration(t *testing.T) {
 	integration.Run(t, allTests, opts...)
-	integration.Run(t, fileOpTests, append(opts, integration.WithMatrix("fileop", map[string]interface{}{
-		"true":  true,
-		"false": false,
-	}))...)
-	integration.Run(t, securityTests, append(append(opts, securityOpts...),
-		integration.WithMatrix("security.insecure", map[string]interface{}{
-			"granted": securityInsecureGranted,
-			"denied":  securityInsecureDenied,
-		}))...)
-	integration.Run(t, networkTests, append(opts,
-		integration.WithMatrix("network.host", map[string]interface{}{
-			"granted": networkHostGranted,
-			"denied":  networkHostDenied,
-		}))...)
+	// integration.Run(t, fileOpTests, append(opts, integration.WithMatrix("fileop", map[string]interface{}{
+	// 	"true":  true,
+	// 	"false": false,
+	// }))...)
+	// integration.Run(t, securityTests, append(append(opts, securityOpts...),
+	// 	integration.WithMatrix("security.insecure", map[string]interface{}{
+	// 		"granted": securityInsecureGranted,
+	// 		"denied":  securityInsecureDenied,
+	// 	}))...)
+	// integration.Run(t, networkTests, append(opts,
+	// 	integration.WithMatrix("network.host", map[string]interface{}{
+	// 		"granted": networkHostGranted,
+	// 		"denied":  networkHostDenied,
+	// 	}))...)
 }
 
 func testDefaultEnvWithArgs(t *testing.T, sb integration.Sandbox) {
@@ -839,7 +840,7 @@ func testWorkdirCopyIgnoreRelative(t *testing.T, sb integration.Sandbox) {
 	dockerfile := []byte(`
 FROM scratch AS base
 WORKDIR /foo
-COPY Dockerfile / 
+COPY Dockerfile /
 FROM scratch
 # relative path still loaded as absolute
 COPY --from=base Dockerfile .
@@ -3458,6 +3459,54 @@ COPY --from=golang /usr/bin/go go
 	require.Contains(t, string(dt), "foo")
 }
 
+func testMultiStageImplicitFromWithExpansion(t *testing.T, sb integration.Sandbox) {
+	f := getFrontend(t, sb)
+
+	dockerfile := []byte(`
+FROM busybox AS golangv2
+RUN mkdir /usr/bin && echo -n foo > /usr/bin/go
+
+ARG tag
+FROM scratch
+COPY --from=golang${tag} /usr/bin/go go
+`)
+
+	dir, err := tmpdir(
+		fstest.CreateFile("Dockerfile", dockerfile, 0600),
+	)
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	c, err := client.New(context.TODO(), sb.Address())
+	require.NoError(t, err)
+	defer c.Close()
+
+	destDir, err := ioutil.TempDir("", "buildkit")
+	require.NoError(t, err)
+	defer os.RemoveAll(destDir)
+
+	_, err = f.Solve(context.TODO(), c, client.SolveOpt{
+		Exports: []client.ExportEntry{
+			{
+				Type:      client.ExporterLocal,
+				OutputDir: destDir,
+			},
+		},
+		FrontendAttrs: map[string]string{
+			"build-arg:tag": "v2",
+		},
+		LocalDirs: map[string]string{
+			builder.DefaultLocalNameDockerfile: dir,
+			builder.DefaultLocalNameContext:    dir,
+		},
+	}, nil)
+	require.NoError(t, err)
+
+	dt, err := ioutil.ReadFile(filepath.Join(destDir, "go"))
+	require.NoError(t, err)
+	require.Contains(t, string(dt), "foo")
+}
+
 func testMultiStageCaseInsensitive(t *testing.T, sb integration.Sandbox) {
 	f := getFrontend(t, sb)
 
@@ -3625,7 +3674,7 @@ ONBUILD RUN mkdir -p /out && echo -n 11 >> /out/foo
 	require.NoError(t, err)
 
 	dockerfile = []byte(fmt.Sprintf(`
-	FROM %s 
+	FROM %s
 	`, target))
 
 	dir, err = tmpdir(

@@ -101,6 +101,7 @@ func Dockerfile2LLB(ctx context.Context, dt []byte, opt ConvertOpt) (*llb.State,
 		optMetaArgs = append(optMetaArgs, setKVValue(metaArg.KeyValuePairOptional, opt.BuildArgs))
 	}
 	metaArgsMap := metaArgsToMap(optMetaArgs)
+	fmt.Printf(">>> metaargsmap, buildargs: %+v\n", []interface{}{metaArgsMap, opt.BuildArgs}) // it turns out that tag is not in metaArgsMap
 
 	metaResolver := opt.MetaResolver
 	if metaResolver == nil {
@@ -190,16 +191,18 @@ func Dockerfile2LLB(ctx context.Context, dt []byte, opt ConvertOpt) (*llb.State,
 	for _, d := range allDispatchStates.states {
 		d.commands = make([]command, len(d.stage.Commands))
 		for i, cmd := range d.stage.Commands {
-			newCmd, err := toCommand(cmd, allDispatchStates)
+			newCmd, err := toCommand(cmd, allDispatchStates, shlex, opt.BuildArgs)
 			if err != nil {
 				return nil, nil, err
 			}
+
+			d.stage.Commands[i] = newCmd.Command
 			d.commands[i] = newCmd
 			for _, src := range newCmd.sources {
 				if src != nil {
 					d.deps[src] = struct{}{}
 					if src.unregistered {
-						name, err := shlex.ProcessWordWithMap(src.stage.BaseName, metaArgsMap)
+						name, err := shlex.ProcessWordWithMap(src.stage.BaseName, opt.BuildArgs)
 						if err != nil {
 							return nil, nil, parser.WithLocation(err, src.stage.Location)
 						}
@@ -211,7 +214,9 @@ func Dockerfile2LLB(ctx context.Context, dt []byte, opt ConvertOpt) (*llb.State,
 					}
 				}
 			}
+
 		}
+		fmt.Printf(">>> stage: %+v\n", []interface{}{d.stage})
 	}
 
 	if has, state := hasCircularDependency(allDispatchStates.states); has {
@@ -429,13 +434,19 @@ func metaArgsToMap(metaArgs []instructions.KeyValuePairOptional) map[string]stri
 	return m
 }
 
-func toCommand(ic instructions.Command, allDispatchStates *dispatchStates) (command, error) {
+func toCommand(ic instructions.Command, allDispatchStates *dispatchStates, shlex *shell.Lex, buildArgs map[string]string) (command, error) {
 	cmd := command{Command: ic}
 	if c, ok := ic.(*instructions.CopyCommand); ok {
 		if c.From != "" {
 			var stn *dispatchState
 			index, err := strconv.Atoi(c.From)
 			if err != nil {
+				from, err := shlex.ProcessWordWithMap(c.From, buildArgs)
+				if err != nil {
+					return command{}, err
+				}
+				c.From = from
+
 				stn, ok = allDispatchStates.findStateByName(c.From)
 				if !ok {
 					stn = &dispatchState{
@@ -623,7 +634,7 @@ func dispatchOnBuildTriggers(d *dispatchState, triggers []string, opt dispatchOp
 		if err != nil {
 			return err
 		}
-		cmd, err := toCommand(ic, opt.allDispatchStates)
+		cmd, err := toCommand(ic, opt.allDispatchStates, opt.shlex, metaArgsToMap(opt.metaArgs))
 		if err != nil {
 			return err
 		}
